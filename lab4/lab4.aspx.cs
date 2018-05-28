@@ -42,7 +42,7 @@ public partial class lab4 : System.Web.UI.Page
     /// <summary>
     /// Ištrina knygas pagal ranka įvesta informaciją
     /// </summary>
-    /// <param name="a"></param>
+    /// <param name="a"> Knygų sąrašas</param>
     void Delete(List<Book> a)
     {
         if (TextBox1.Text == "")
