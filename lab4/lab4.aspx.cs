@@ -15,28 +15,28 @@ public partial class lab4 : System.Web.UI.Page
         Directory.CreateDirectory(Server.MapPath("Duomenys"));
         List<Book> books = Reading();
         Actions(books);
-        
+
     }
     /// <summary>
     /// Atlieka veiksmus
     /// </summary>
     /// <param name="a"> Knygų sąrašas</param>
-    void Actions (List<Book> a)
+    void Actions(List<Book> a)
     {
 
-        List<Book> filtered = SortByCriteria(a);
-        filtered.Sort();
+        List<Book> filtered = FilterByCriteria(a);
+        //filtered.Sort();
         Delete(filtered);
+        filtered = filtered
+            .OrderBy(nn => nn.Title)
+            .ThenBy(nn => nn.Sold)
+            .ToList<Book>();
         PrintList(Table1, filtered);
         PrintList(Table3, a);
         PrintTotxt(a, filtered);
         if (FileUpload1.HasFile)
         {
             PrintCriteria(Table2);
-        }
-        else
-        {
-            string path = Server.MapPath("App_Data/pirmas.txt");
         }
     }
     /// <summary>
@@ -47,21 +47,12 @@ public partial class lab4 : System.Web.UI.Page
     {
         if (TextBox1.Text == "")
             return;
-
-        //IEnumerable<Book> Filter =
-        //    from book in a
-        //    where book.Years.ToString() == TextBox1.Text                                                                              <------------------------------
-        //    select book;
-        //foreach (Book book in Filter)
-        //{
-
-        //}
         for (int i = 0; i < a.Count; i++)
         {
-                if (a[i].Years == int.Parse(TextBox1.Text))
-                {
-                    a.RemoveAt(i--);
-                }
+            if (a[i].Years == int.Parse(TextBox1.Text))
+            {
+                a.RemoveAt(i--);
+            }
 
         }
     }
@@ -116,7 +107,7 @@ public partial class lab4 : System.Web.UI.Page
             writer.WriteLine();
             writer.WriteLine("Pradiniai duomenys");
             writer.WriteLine("{0,-20}{1,-30}{2,-7}{3,-10}{4,-10}{5,-10}", "Autorius", "Pavadinimas", "Metai", "Kaina", "Parduota", "Liko");
-            foreach(Book book in data)
+            foreach (Book book in data)
             {
                 writer.WriteLine(book.ToString());
             }
@@ -141,7 +132,7 @@ public partial class lab4 : System.Web.UI.Page
     void PrintList(Table table, List<Book> list)
     {
         TableText(table, "Autorius;Pavadinimas;Metai;Kaina;Parduota;Liko");
-        foreach(Book book in list)
+        foreach (Book book in list)
         {
             AddRow(book, table);
         }
@@ -154,7 +145,7 @@ public partial class lab4 : System.Web.UI.Page
     {
         TableRow row = new TableRow();
         TableCell pavadinimas = new TableCell();
-        pavadinimas.Text = String.Format("Klaida - {0}",a);
+        pavadinimas.Text = String.Format("Klaida - {0}", a);
         row.Cells.Add(pavadinimas);
         Table4.Rows.Add(row);
     }
@@ -210,24 +201,21 @@ public partial class lab4 : System.Web.UI.Page
     }
 
     /// <summary>
-    /// Rūšiuoja pagal kriterijus
+    /// Atrenka pagal kriterijus
     /// </summary>
     /// <param name="books"></param>
     /// <returns></returns>
-    List<Book> SortByCriteria(List<Book> books)
+    List<Book> FilterByCriteria(List<Book> books)
     {
         List<Book> a = new List<Book>();
         string[] years;
         double price;
         Criteria(out years, out price);
-        IEnumerable<Book> Filter =
+        IEnumerable<Book> Filter =                                                      //<-----------------------------------
             from book in books
-            where book.Years >= int.Parse(years[0]) && book.Years <= int.Parse(years[1])  && book.Price < price
+            where book.Years >= int.Parse(years[0]) && book.Years <= int.Parse(years[1]) && book.Price < price
             select book;
-        foreach (Book book in Filter)
-        {
-            a.Add(book);
-        }
+        a = Filter.ToList<Book>();
         return a;
     }
     /// <summary>
@@ -280,7 +268,7 @@ public partial class lab4 : System.Web.UI.Page
         double price;
         string[] YearsString = new string[2];
         GetPath(out path);
-        if (!File.Exists(path)) 
+        if (!File.Exists(path))
         {
             YearsString[0] = "1";
             YearsString[1] = "2100";
@@ -304,7 +292,7 @@ public partial class lab4 : System.Web.UI.Page
 
     protected void Button1_Click(object sender, EventArgs e)
     {
-        
+
     }
     /// <summary>
     /// Metodas eilutes lentelėje pridejimui
@@ -341,7 +329,7 @@ public partial class lab4 : System.Web.UI.Page
     {
         string[] datas = a.Split(';');
         TableRow Eilute = new TableRow();
-        foreach (string data in datas )
+        foreach (string data in datas)
         {
             Eilute.Cells.Add(cell(data));
         }
@@ -355,5 +343,7 @@ public partial class lab4 : System.Web.UI.Page
     {
         string stduoma = Server.MapPath("App_Data/pirmas.txt");
         File.Delete(stduoma);
+        Button1_Click(sender, e);
     }
+
 }
